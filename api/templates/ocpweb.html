@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<title>OCP Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+.tab {display:none}
+</style>
+<body>
+{% for value in result -%}
+{% set failure = false %}
+{% for item in value['Status'] -%}{% if item == 'OutOfDisk' and value['Status'][item] == 'True' %}
+{% set failure = true %}
+{% endif %}{% if item == 'MemoryPressure' and value['Status'][item] == 'True' %}
+{% set failure = true %}
+{% endif %}{% if item == 'DiskPressure' and value['Status'][item] == 'True' %}
+{% set failure = true %}
+{% endif %}{% if item == 'Ready' and value['Status'][item] == 'False' %}
+{% set failure = true %}
+{% endif %}
+{% if failure is sameas true %}
+<div class="w3-panel w3-red w3-display-container">
+  <span onclick="this.parentElement.style.display='none'"
+  class="w3-button w3-red w3-large w3-display-topright">x</span>
+  <p>{{ value['Node'] }} Please check failures.</p>
+</div>
+{% endif %}
+{%- endfor %}
+{%- endfor %}
+<div class="w3-container">
+  <h2>OCP Node Status</h2>
+  <p>Will display basic node status information. Still in progress.</p>
+{% for value in result -%}
+{% if value['TotalNodes'] %}
+<h3>Total Cluster Nodes: {{ value['TotalNodes'] }}</h3>
+{% endif %}
+{%- endfor %}
+
+  <table class="w3-table-all w3-card-4">
+    <tr>
+      <th>Node</th>
+      <th>OutOfDisk</th>
+      <th>MemoryPressure</th>
+      <th>DiskPressure</th>
+      <th>Ready</th>
+      <th>Details</th>
+    </tr>
+    <tr>
+{% for value in result -%}
+{% if value['Node'] %}
+{% set node=value['Node'].split('.')[0] %}
+      <td>{{ node }}</td>
+{% for item in value['Status'] -%}<td>{% if item == 'OutOfDisk' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'OutOfDisk' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'MemoryPressure' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'MemoryPressure' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'DiskPressure' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'DiskPressure' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'Ready' and value['Status'][item] == 'True' %}<font color="green">{% elif item == 'Ready' and value['Status'][item] == 'False' %}<font color="red">{% endif %}{{ value['Status'][item] }}</font></td>  {%- endfor %}
+      <td>
+<div class="w3-container">
+
+<button onclick="document.getElementById('{{ node }}').style.display='block'" class="w3-button w3-black">View</button>
+
+<div id="{{ node }}" class="w3-modal">
+ <div class="w3-modal-content w3-card-4 w3-animate-zoom">
+  <header class="w3-container w3-blue"> 
+   <span onclick="document.getElementById('{{ node }}').style.display='none'" 
+   class="w3-button w3-blue w3-xlarge w3-display-topright">&times;</span>
+   <h2>Details</h2>
+  </header>
+
+  <div class="w3-bar w3-border-bottom">
+   <button class="tablink w3-bar-item w3-button" onclick="openTab(event, '{{ node }}-Labels')">Labels</button>
+   <button class="tablink w3-bar-item w3-button" onclick="openTab(event, '{{ node }}-Resources')">Resources</button>
+   <button class="tablink w3-bar-item w3-button" onclick="openTab(event, '{{ node }}-Pods')">Pods</button>
+  </div>
+
+  <div id="{{ node }}-Labels" class="w3-container tab">
+   <table class="w3-table-all w3-card-4">
+    <tr>
+      <th>Label</th>
+      <th>Value</th>
+    </tr>
+   {% for label in value['Labels'] -%}
+    <tr>
+       <td>{{ label }}</td>
+       <td>{{ value['Labels'][label] }}</td>
+    </tr>
+   {% endfor -%}
+   </table>
+  </div>
+
+  <div id="{{ node }}-Resources" class="w3-container tab">
+   <h1>Resources</h1>
+   <p>In Progress</p><br>
+  </div>
+
+  <div id="{{ node }}-Pods" class="w3-container tab">
+   <table class="w3-table-all w3-card-4">
+    <tr>
+      <th>Pod</th>
+      <th>Status</th>
+      <th>Node Selector</th>
+      <th>Node</h>
+    </tr>
+   {% for pod in podresult -%}
+   {% if pod['Node'] == value['Node'] %}
+    <tr>
+       <td>{{ pod['Pod'] }}</td>
+       <td>{{ pod['Status'] }}</td>
+       <td>{{ pod['NodeSelector'] }}</td>
+       <td>{{ pod['Node'] }}</td>
+    </tr>
+   {% endif %}
+   {% endfor -%}
+   </table>
+  </div>
+
+  <div class="w3-container w3-light-grey w3-padding">
+   <button class="w3-btn w3-right w3-white w3-border" 
+   onclick="document.getElementById('{{ node }}').style.display='none'">Close</button>
+  </div>
+ </div>
+</div>
+
+</div>
+      </td>
+{% endif %}
+    </tr>
+{%- endfor %}
+  </table>
+</div>
+
+<script>
+document.getElementsByClassName("tablink")[0].click();
+
+function openTab(evt, tabName) {
+  var i, x, tablinks;
+  x = document.getElementsByClassName("tab");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablink");
+  for (i = 0; i < x.length; i++) {
+    tablinks[i].classList.remove("w3-light-grey");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.classList.add("w3-light-grey");
+}
+</script>
+
+</body>
+</html> 

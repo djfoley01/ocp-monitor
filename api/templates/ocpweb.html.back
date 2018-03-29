@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<title>Node Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+{% for value in result %}
+<div class="w3-container">
+  <h3> {{ value['Node'] }}</h3>
+    <p>{% for item in value['Status'] %}{% if item == 'OutOfDisk' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'OutOfDisk' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'MemoryPressure' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'MemoryPressure' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'DiskPressure' and value['Status'][item] == 'False' %}<font color="green">{% elif item == 'DiskPressure' and value['Status'][item] == 'True' %}<font color="red">{% endif %}{% if item == 'Ready' and value['Status'][item] == 'True' %}<font color="green">{% elif item == 'Ready' and value['Status'][item] == 'False' %}<font color="red">{% endif %}{{ item }}: {{ value['Status'][item] }}</font>  {% endfor %}</p>
+  <hr>
+</div>
+{% endfor %}
+
+</body>
+</html>
