@@ -32,18 +32,18 @@ from api.utils.decorators import login_required, validate_user, ocp_valid
 logger = get_task_logger(__name__)
 
 def get_token():
-    token = subprocess.Popen(["/app/scripts/get_os_token.x"], stdout=subprocess.PIPE).communicate()[0]
+    token = os.environ['OCPTOKEN'] 
     return token
 
 class OCPToken(Resource):
     @ocp_valid
     def get(self):
         try:
-            token = subprocess.Popen(["/app/scripts/get_os_token.x"], stdout=subprocess.PIPE).communicate()[0]
+            token = os.environ['OCPTOKEN']
             #output = {'token': token}
             #output_json = json.dumps(output)
             d = {}
-            d['token'] = token.decode("utf-8").rstrip()
+            d['token'] = token
             #output_json = json.loads(d)
             final = json.dumps(d)
             return final
@@ -53,10 +53,10 @@ class OCPToken(Resource):
 
 class OCPNodes(Resource):
      def get(self):
-        auth_token = subprocess.Popen(["/app/scripts/get_os_token.x"], stdout=subprocess.PIPE).communicate()[0]
+        auth_token = os.environ['OCPTOKEN']
         #auth_token = auth_token_tmp.replace(' ', '')[:-1]
-        url = 'https://devosmlb.saccap.int:8443/api/v1/nodes'
-        header = {"Authorization": "bearer " + auth_token.decode("utf-8").rstrip()}
+        url = os.environ['OCPURL'] + '/api/v1/nodes'
+        header = {"Authorization": "bearer " + auth_token}
         response = requests.get(url,headers=header,verify=False)
         if(response.ok):
                 nodes = json.loads(response.content)
@@ -86,10 +86,10 @@ class OCPNodes(Resource):
 
 class OCPWeb(Resource):
      def get(self):
-        auth_token = subprocess.Popen(["/app/scripts/get_os_token.x"], stdout=subprocess.PIPE).communicate()[0]
+        auth_token = os.environ['OCPTOKEN']
         #auth_token = auth_token_tmp.replace(' ', '')[:-1]
-        url = 'https://devosmlb.saccap.int:8443/api/v1/nodes'
-        header = {"Authorization": "bearer " + auth_token.decode("utf-8").rstrip()}
+        url = os.environ['OCPURL'] + '/api/v1/nodes'
+        header = {"Authorization": "bearer " + auth_token}
         response = requests.get(url,headers=header,verify=False)
         if(response.ok):
                 nodes = json.loads(response.content)

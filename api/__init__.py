@@ -6,6 +6,7 @@ from api.controllers import auth, files, users, ocp, ocptotals, ocpnodes, ocpupd
 from config import config
 
 import json
+import os
 import subprocess
 import requests
 
@@ -27,10 +28,10 @@ def create_app(env):
     CORS(app)
     @app.route('/ocpweb')
     def webload():
-        auth_token = subprocess.Popen(["/app/scripts/get_os_token.x"], stdout=subprocess.PIPE).communicate()[0]
+        auth_token = os.environ['OCPTOKEN']
         #auth_token = auth_token_tmp.replace(' ', '')[:-1]
-        url = 'https://devosmlb.saccap.int:8443/api/v1/nodes'
-        header = {"Authorization": "bearer " + auth_token.decode("utf-8").rstrip()}
+        url = os.environ['OCPURL'] + "/api/v1/nodes"
+        header = {"Authorization": "bearer " + auth_token}
         response = requests.get(url,headers=header,verify=False)
         if(response.ok):
                 nodes = json.loads(response.content)
@@ -54,8 +55,8 @@ def create_app(env):
                         output.append({'Node': node, 'Labels': item['metadata']['labels'], 'Status': {'OutOfDisk': diskstatus, 'MemoryPressure': memstatus, 'DiskPressure': diskpress, 'Ready': ready}})
                 count = len(total)
                 output.append({'TotalNodes': count})
-        podurl = 'https://devosmlb.saccap.int:8443/api/v1/pods'
-        podheader = {"Authorization": "bearer " + auth_token.decode("utf-8").rstrip()}
+        podurl = os.environ['OCPURL'] + "/api/v1/pods"
+        podheader = {"Authorization": "bearer " + auth_token}
         podresponse = requests.get(podurl,headers=podheader,verify=False)
         if(podresponse.ok):
                 pods = json.loads(podresponse.content)
